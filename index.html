@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="en" data-lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart CV Maker BD | Professional CV & Resume Builder</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Bengali:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html2pdf.js for Client-side PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #1e40af;
+            --primary-hover: #1d4ed8;
+            --accent-color: #2563eb;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --sidebar-width: 480px;
+            --font-family: 'Inter', 'Noto Sans Bengali', sans-serif;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navbar */
+        nav {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.75rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rre;
+            cursor: pointer;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        .btn-outline:hover {
+            background: var(--border-color);
+        }
+
+        .btn-danger {
+            background: #dc2626;
+        }
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        select.lang-select {
+            padding: 0.4rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-main);
+            cursor: pointer;
+        }
+
+        /* Views */
+        .view-section {
+            display: none;
+            flex: 1;
+        }
+
+        .view-section.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Home View */
+        .hero {
+            text-align: center;
+            padding: 4rem 1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .category-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            border-color: var(--primary-color);
+        }
+
+        .category-card i {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .category-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .category-card p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Workspace View (Editor + Live Preview) */
+        .workspace {
+            display: grid;
+            grid-template-columns: var(--sidebar-width) 1fr;
+            height: calc(100vh - 65px);
+            overflow: hidden;
+        }
+
+        @media(max-width: 1024px) {
+            .workspace {
+                grid-template-columns: 1fr;
+                height: auto;
+                overflow: visible;
+            }
+        }
+
+        .editor-sidebar {
+            background: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .preview-pane {
+            background: #e2e8f0;
+            overflow-y: auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        [data-theme="dark"] .preview-pane {
+            background: #090d16;
+        }
+
+        /* Editor Toolbar */
+        .editor-toolbar {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* Form Accordion / Sections */
+        .form-section {
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            background: var(--card-bg);
+        }
+
+        .form-section-header {
+            background: rgba(0,0,0,0.02);
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .form-section-body {
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            background: var(--card-bg);
+            color: var(--text-main);
+            font-size: 0.9rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media(max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .dynamic-item {
+            border: 1px dashed var(--border-color);
+            padding: 1rem;
+            border-radius: 0.375rem;
+            position: relative;
+            margin-bottom: 1rem;
+            background: rgba(0,0,0,0.01);
+        }
+
+        .remove-item-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: transparent;
+            border: none;
+            color: #dc2626;
+            cursor: pointer;
+        }
+
+        /* A4 CV Preview Container */
+        .cv-preview-container {
+            width: 210mm;
+            min-height: 297mm;
+            background: #ffffff;
+            color: #1e293b;
+            padding: 15mm;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            margin-bottom: 2rem;
+            box-sizing: border-box;
+            position: relative;
+            font-size: 10pt;
+            line-height: 1.4;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #cv-preview, #cv-preview * {
+                visibility: visible;
+            }
+            #cv-preview {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                box-shadow: none;
+            }
+        }
+
+        /* Template Styles */
+        /* Template 1: Modern Blue */
+        .template-modern-blue .cv-header {
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+        .template-modern-blue .cv-header img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .template-modern-blue h1 {
+            color: var(--accent-color);
+            font-size: 20pt;
+            margin-bottom: 0.2rem;
+        }
+        .template-modern-blue h3 {
+            color: var(--primary-color);
+            font-size: 12pt;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 0.2rem;
+            margin: 1rem 0 0.5rem 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Template 2: Classic Black & White */
+        .template-classic-bw {
+            font-family: 'Times New Roman', serif;
+        }
+        .template-classic-bw .cv-header {
+            text-align: center;
+            border-bottom: 1px solid #000;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+        .template-classic-bw h1 {
+            font-size: 22pt;
+            margin-bottom: 0.2rem;
+        }
+        .template-classic-bw h3 {
+            font-size: 12pt;
+            border-bottom: 1px solid #000;
+            padding-bottom: 0.1rem;
+            margin: 1rem 0 0.5rem 0;
+            text-transform: uppercase;
+        }
+
+        /* Template 3: Corporate Professional */
+        .template-corporate {
+            border-top: 6px solid #0f172a;
+        }
+        .template-corporate .cv-header {
+            background: #f1f5f9;
+            padding: 1rem;
+            margin: -15mm -15mm 1rem -15mm;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .template-corporate h1 {
+            color: #0f172a;
+            font-size: 20pt;
+        }
+        .template-corporate h3 {
+            color: #0f172a;
+            border-left: 4px solid #0f172a;
+            padding-left: 0.5rem;
+            margin: 1rem 0 0.5rem 0;
+            font-size: 11pt;
+            background: #f8fafc;
+        }
+
+        /* Common CV Elements */
+        .cv-section {
+            margin-bottom: 1rem;
+        }
+        .cv-contact-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            font-size: 9pt;
+            color: #475569;
+            margin-top: 0.5rem;
+        }
+        .cv-item {
+            margin-bottom: 0.5rem;
+        }
+        .cv-item-title {
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+        }
+        .cv-item-subtitle {
+            font-weight: 500;
+            color: #475569;
+        }
+        .cv-item-date {
+            font-size: 8.5pt;
+            color: #64748b;
+        }
+
+        /* Floating Controls for Preview */
+        .preview-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            background: var(--card-bg);
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Notification Toast */
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.375rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            display: none;
+            z-index: 2000;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav>
+        <div class="logo" onclick="switchView('home')">
+            <i class="fa-solid fa-file-lines"></i>
+            <span data-i18n="site_title">Smart CV Maker BD</span>
+        </div>
+        <div class="nav-actions">
+            <select id="languageSelect" class="lang-select" onchange="changeLanguage(this.value)">
+                <option value="en">English</option>
+                <option value="bn">বাংলা</option>
+            </select>
+            <button class="btn btn-outline" onclick="toggleTheme()"><i class="fa-solid fa-moon"></i></button>
+            <button class="btn" onclick="switchView('editor')" data-i18n="create_cv_btn"><i class="fa-solid fa-plus"></i> Create CV</button>
+        </div>
+    </nav>
+
+    <!-- HOME VIEW -->
+    <section id="homeView" class="view-section active">
+        <div class="hero">
+            <h1 data-i18n="hero_title">Build Your Professional CV in Minutes</h1>
+            <p data-i18n="hero_subtitle">Tailored for Bangladeshi Job Seekers, International Applications, Students, Freshers, and Foreign Workers. 100% Secure, Fast, and Free.</p>
+            <button class="btn" style="padding: 0.75rem 1.5rem; font-size: 1.1rem;" onclick="switchView('editor')">
+                <i class="fa-solid fa-rocket"></i> <span data-i18n="get_started">Get Started Now</span>
+            </button>
+        </div>
+
+        <h2 style="text-align: center; margin-bottom: 1.5rem;" data-i18n="select_category">Choose Your CV Category</h2>
+        <div class="categories-grid">
+            <div class="category-card" onclick="selectCategory('bd')">
+                <i class="fa-solid fa-building-columns"></i>
+                <h3 data-i18n="cat_bd">Bangladesh Job CV</h3>
+                <p data-i18n="cat_bd_desc">Standard format for local corporate, government, and NGO positions.</p>
+            </div>
+            <div class="category-card" onclick="selectCategory('international')">
+                <i class="fa-solid fa-globe"></i>
+                <h3 data-i18n="cat_intl">International Job CV</h3>
+                <p data-i18n="cat_intl_desc">ATS-friendly clean layout for remote and global companies.</p>
+            </div>
+            <div class="category-card" onclick="selectCategory('student')">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <h3 data-i18n="cat_student">Student CV</h3>
+                <p data-i18n="cat_student_desc">Highlight academics, projects, extracurriculars, and internships.</p>
+            </div>
+            <div class="category-card" onclick="selectCategory('fresher')">
+                <i class="fa-solid fa-seedling"></i>
+                <h3 data-i18n="cat_fresher">Fresher CV</h3>
+                <p data-i18n="cat_fresher_desc">Optimized for recent graduates starting their career journey.</p>
+            </div>
+            <div class="category-card" onclick="selectCategory('professional')">
+                <i class="fa-solid fa-briefcase"></i>
+                <h3 data-i18n="cat_prof">Experienced Professional</h3>
+                <p data-i18n="cat_prof_desc">Focuses on extensive career achievements and leadership.</p>
+            </div>
+            <div class="category-card" onclick="selectCategory('malaysia')">
+                <i class="fa-solid fa-passport"></i>
+                <h3 data-i18n="cat_malaysia">Malaysia Foreign Worker CV</h3>
+                <p data-i18n="cat_malaysia_desc">Specialized format including passport availability, skills & work history.</p>
+            </div>
+            <div class="category-card" onclick="selectCategory('europass')">
+                <i class="fa-solid fa-id-card"></i>
+                <h3 data-i18n="cat_europass">Europass-Style CV</h3>
+                <p data-i18n="cat_europass_desc">Inspired by European professional convention layouts.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- EDITOR & WORKSPACE VIEW -->
+    <section id="editorView" class="view-section">
+        <div class="workspace">
+            <!-- Sidebar Form -->
+            <div class="editor-sidebar">
+                <div class="editor-toolbar">
+                    <button class="btn btn-outline" onclick="switchView('home')"><i class="fa-solid fa-arrow-left"></i> <span data-i18n="back_home">Home</span></button>
+                    <button class="btn btn-outline" onclick="saveDraft()"><i class="fa-solid fa-floppy-disk"></i> <span data-i18n="save_draft">Save</span></button>
+                    <button class="btn btn-danger" onclick="confirmReset()"><i class="fa-solid fa-trash"></i> <span data-i18n="clear_form">Clear</span></button>
+                </div>
+
+                <!-- Template & Styling Settings -->
+                <div class="form-section">
+                    <div class="form-section-header" onclick="toggleAccordion(this)">
+                        <span data-i18n="sec_template">Template & Styling</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="form-section-body">
+                        <div class="form-group">
+                            <label data-i18n="lbl_template">Choose Template</label>
+                            <select id="templateSelect" class="form-control" onchange="updatePreview()">
+                                <option value="template-modern-blue">Modern Blue</option>
+                                <option value="template-classic-bw">Classic Black & White</option>
+                                <option value="template-corporate">Corporate Professional</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label data-i18n="lbl_accent">Accent Color</label>
+                                <input type="color" id="accentColor" class="form-control" value="#1e40af" onchange="updatePreview()" style="height: 38px; padding: 2px;">
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="lbl_photo_toggle">Show Photo</label>
+                                <select id="showPhoto" class="form-control" onchange="updatePreview()">
+                                    <option value="yes">Yes</option>
+                                    <option value="no">No</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personal Information -->
+                <div class="form-section">
+                    <div class="form-section-header" onclick="toggleAccordion(this)">
+                        <span data-i18n="sec_personal">Personal Information</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="form-section-body">
+                        <div class="form-group">
+                            <label data-i18n="lbl_fullname">Full Name *</label>
+                            <input type="text" id="fullName" class="form-control" placeholder="Md. Rahim Uddin" oninput="updatePreview()">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="lbl_photo">Profile Photo</label>
+                            <input type="file" id="profilePhoto" class="form-control" accept="image/*" onchange="handleImageUpload(event)">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label data-i18n="lbl_father">Father's Name</label>
+                                <input type="text" id="fathersName" class="form-control" oninput="updatePreview()">
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="lbl_mother">Mother's Name (Optional)</label>
+                                <input type="text" id="mothersName" class="form-control" oninput="updatePreview()">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label data-i18n="lbl_dob">Date of Birth</label>
+                                <input type="date" id="dob" class="form-control" oninput="updatePreview()">
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="lbl_gender">Gender</label>
+                                <select id="gender" class="form-control" onchange="updatePreview()">
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label data-i18n="lbl_nationality">Nationality</label>
+                                <input type="text" id="nationality" class="form-control" value="Bangladeshi" oninput="updatePreview()">
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="lbl_religion">Religion (Optional)</label>
+                                <input type="text" id="religion" class="form-control" oninput="updatePreview()">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label data-i18n="lbl_marital">Marital Status</label>
+                                <select id="maritalStatus" class="form-control" onchange="updatePreview()">
+                                    <option value="Single">Single</option>
+                                    <option value="Married">Married</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="lbl_mobile">Mobile Number *</label>
+                                <input type="text" id="mobile" class="form-control" placeholder="+880 1700-000000" oninput="updatePreview()">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="lbl_email">Email Address *</label>
+                            <input type="email" id="email" class="form-control" placeholder="rahim@example.com" oninput="updatePreview()">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label data-i18n="lbl_nid">NID Number (Optional - Private)</label>
+                                <input type="text" id="nid" class="form-control" placeholder="Optional" oninput="updatePreview()">
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="lbl_passport">Passport Number (Optional)</label>
+                                <input type="text" id="passport" class="form-control" placeholder="Optional" oninput="updatePreview()">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="lbl_present_addr">Present Address</label>
+                            <textarea id="presentAddress" class="form-control" rows="2" oninput="updatePreview()"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="lbl_perm_addr">Permanent Address</label>
+                            <textarea id="permAddress" class="form-control" rows="2" oninput="updatePreview()"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Career Objective & Summary -->
+                <div class="form-section">
+                    <div class="form-section-header" onclick="toggleAccordion(this)">
+                        <span data-i18n="sec_objective">Career Objective & Summary</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="form-section-body">
+                        <div class="form-group">
+                            <label data-i18n="lbl_objective">Career Objective</label>
+                            <textarea id="objective" class="form-control" rows="3" placeholder="Seeking a challenging role..." oninput="updatePreview()"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label data-i18n="lbl_desired_job">Desired Job Position</label>
+                                <input type="text" id="desiredJob" class="form-control" placeholder="Software Engineer" oninput="updatePreview()">
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="lbl_industry">Preferred Industry</label>
+                                <input type="text" id="industry" class="form-control" placeholder="IT & Telecommunication" oninput="updatePreview()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Educational Qualifications -->
+                <div class="form-section">
+                    <div class="form-section-header" onclick="toggleAccordion(this)">
+                        <span data-i18n="sec_education">Educational Qualifications</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="form-section-body">
+                        <div id="educationContainer"></div>
+                        <button class="btn btn-outline" onclick="addEducationField()"><i class="fa-solid fa-plus"></i> <span data-i18n="btn_add_edu">Add Education</span></button>
+                    </div>
+                </div>
+
+                <!-- Work Experience -->
+                <div class="form-section">
+                    <div class="form-section-header" onclick="toggleAccordion(this)">
+                        <span data-i18n="sec_experience">Work Experience</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="form-section-body">
+                        <div id="experienceContainer"></div>
+                        <button class="btn btn-outline" onclick="addExperienceField()"><i class="fa-solid fa-plus"></i> <span data-i18n="btn_add_exp">Add Experience</span></button>
+                    </div>
+                </div>
+
+                <!-- Skills & Additional Info -->
+                <div class="form-section">
+                    <div class="form-section-header" onclick="toggleAccordion(this)">
+                        <span data-i18n="sec_skills">Skills & Additional Info</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="form-section-body">
+                        <div class="form-group">
+                            <label data-i18n="lbl_comp_skills">Computer Skills</label>
+                            <input type="text" id="computerSkills" class="form-control" placeholder="MS Office, Internet Browsing, Programming" oninput="updatePreview()">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="lbl_tech_skills">Technical Skills</label>
+                            <input type="text" id="techSkills" class="form-control" placeholder="HTML, CSS, JavaScript, React" oninput="updatePreview()">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="lbl_languages">Language Proficiency</label>
+                            <input type="text" id="languages" class="form-control" placeholder="Bengali (Native), English (Fluent)" oninput="updatePreview()">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="lbl_certifications">Training & Certifications</label>
+                            <textarea id="certifications" class="form-control" rows="2" placeholder="Web Development Bootcamp - 2025" oninput="updatePreview()"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="lbl_projects">Projects</label>
+                            <textarea id="projects" class="form-control" rows="2" placeholder="E-commerce web app using React" oninput="updatePreview()"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="lbl_references">References</label>
+                            <textarea id="references" class="form-control" rows="2" placeholder="Name, Designation, Organization, Contact" oninput="updatePreview()"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Live Preview Pane -->
+            <div class="preview-pane">
+                <div class="preview-controls">
+                    <button class="btn" onclick="downloadPDF()"><i class="fa-solid fa-download"></i> <span data-i18n="btn_download">Download PDF</span></button>
+                    <button class="btn btn-outline" onclick="window.print()"><i class="fa-solid fa-print"></i> <span data-i18n="btn_print">Print CV</span></button>
+                </div>
+
+                <div id="cv-preview" class="cv-preview-container template-modern-blue">
+                    <!-- CV Header -->
+                    <div class="cv-header">
+                        <img id="prevPhoto" src="" alt="Profile Photo" style="display: none;">
+                        <div>
+                            <h1 id="prevName">Md. Rahim Uddin</h1>
+                            <div class="cv-item-subtitle" id="prevDesiredJob">Software Engineer</div>
+                            <div class="cv-contact-info">
+                                <span id="prevPhoneDisp"><i class="fa-solid fa-phone"></i> <span id="prevMobile">+880 1700-000000</span></span>
+                                <span id="prevEmailDisp"><i class="fa-solid fa-envelope"></i> <span id="prevEmail">rahim@example.com</span></span>
+                                <span id="prevAddressDisp"><i class="fa-solid fa-location-dot"></i> <span id="prevAddress">Dhaka, Bangladesh</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Career Objective -->
+                    <div class="cv-section" id="sectionObjective">
+                        <h3 data-i18n="sec_objective">Career Objective</h3>
+                        <p id="prevObjectiveText">Seeking a challenging role in an organization to utilize my technical skills and contribute to professional growth.</p>
+                    </div>
+
+                    <!-- Personal Details -->
+                    <div class="cv-section" id="sectionPersonalDetails">
+                        <h3 data-i18n="sec_personal">Personal Information</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 9.5pt;">
+                            <div><strong>Father's Name:</strong> <span id="prevFather">-</span></div>
+                            <div><strong>Mother's Name:</strong> <span id="prevMother">-</span></div>
+                            <div><strong>Date of Birth:</strong> <span id="prevDob">-</span></div>
+                            <div><strong>Gender:</strong> <span id="prevGender">-</span></div>
+                            <div><strong>Nationality:</strong> <span id="prevNationality">Bangladeshi</span></div>
+                            <div><strong>Marital Status:</strong> <span id="prevMarital">Single</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Education -->
+                    <div class="cv-section" id="sectionEducation">
+                        <h3 data-i18n="sec_education">Educational Qualifications</h3>
+                        <div id="prevEducationList"></div>
+                    </div>
+
+                    <!-- Experience -->
+                    <div class="cv-section" id="sectionExperience">
+                        <h3 data-i18n="sec_experience">Work Experience</h3>
+                        <div id="prevExperienceList"></div>
+                    </div>
+
+                    <!-- Skills & Additional -->
+                    <div class="cv-section" id="sectionSkills">
+                        <h3 data-i18n="sec_skills">Skills & Expertise</h3>
+                        <p><strong>Computer Skills:</strong> <span id="prevCompSkills">-</span></p>
+                        <p><strong>Technical Skills:</strong> <span id="prevTechSkills">-</span></p>
+                        <p><strong>Languages:</strong> <span id="prevLang">-</span></p>
+                        <p><strong>Certifications:</strong> <span id="prevCert">-</span></p>
+                        <p><strong>Projects:</strong> <span id="prevProj">-</span></p>
+                        <p><strong>References:</strong> <span id="prevRef">-</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Notification Toast -->
+    <div id="toast">Action successful</div>
+
+    <script>
+        // Multi-language Dictionary
+        const i18n = {
+            en: {
+                site_title: "Smart CV Maker BD",
+                hero_title: "Build Your Professional CV in Minutes",
+                hero_subtitle: "Tailored for Bangladeshi Job Seekers, International Applications, Students, Freshers, and Foreign Workers. 100% Secure, Fast, and Free.",
+                get_started: "Get Started Now",
+                select_category: "Choose Your CV Category",
+                cat_bd: "Bangladesh Job CV",
+                cat_bd_desc: "Standard format for local corporate, government, and NGO positions.",
+                cat_intl: "International Job CV",
+                cat_intl_desc: "ATS-friendly clean layout for remote and global companies.",
+                cat_student: "Student CV",
+                cat_student_desc: "Highlight academics, projects, extracurriculars, and internships.",
+                cat_fresher: "Fresher CV",
+                cat_fresher_desc: "Optimized for recent graduates starting their career journey.",
+                cat_prof: "Experienced Professional",
+                cat_prof_desc: "Focuses on extensive career achievements and leadership.",
+                cat_malaysia: "Malaysia Foreign Worker CV",
+                cat_malaysia_desc: "Specialized format including passport availability, skills & work history.",
+                cat_europass: "Europass-Style CV",
+                cat_europass_desc: "Inspired by European professional convention layouts.",
+                create_cv_btn: "Create CV",
+                back_home: "Home",
+                save_draft: "Save Draft",
+                clear_form: "Clear Form",
+                sec_template: "Template & Styling",
+                lbl_template: "Choose Template",
+                lbl_accent: "Accent Color",
+                lbl_photo_toggle: "Show Photo",
+                sec_personal: "Personal Information",
+                lbl_fullname: "Full Name *",
+                lbl_photo: "Profile Photo",
+                lbl_father: "Father's Name",
+                lbl_mother: "Mother's Name (Optional)",
+                lbl_dob: "Date of Birth",
+                lbl_gender: "Gender",
+                lbl_nationality: "Nationality",
+                lbl_religion: "Religion (Optional)",
+                lbl_marital: "Marital Status",
+                lbl_mobile: "Mobile Number *",
+                lbl_email: "Email Address *",
+                lbl_nid: "NID Number (Optional - Private)",
+                lbl_passport: "Passport Number (Optional)",
+                lbl_present_addr: "Present Address",
+                lbl_perm_addr: "Permanent Address",
+                sec_objective: "Career Objective & Summary",
+                lbl_objective: "Career Objective",
+                lbl_desired_job: "Desired Job Position",
+                lbl_industry: "Preferred Industry",
+                sec_education: "Educational Qualifications",
+                btn_add_edu: "Add Education",
+                sec_experience: "Work Experience",
+                btn_add_exp: "Add Experience",
+                sec_skills: "Skills & Additional Info",
+                lbl_comp_skills: "Computer Skills",
+                lbl_tech_skills: "Technical Skills",
+                lbl_languages: "Language Proficiency",
+                lbl_certifications: "Training & Certifications",
+                lbl_projects: "Projects",
+                lbl_references: "References",
+                btn_download: "Download PDF",
+                btn_print: "Print CV"
+            },
+            bn: {
+                site_title: "স্মার্ট সিভি মেকার বিডি",
+                hero_title: "মাত্র কয়েক মিনিটে আপনার প্রফেশনাল সিভি তৈরি করুন",
+                hero_subtitle: "বাংলাদেশী চাকরিপ্রার্থী, আন্তর্জাতিক আবেদনকারী, ছাত্রছাত্রী এবং বৈদেশিক কর্মীদের জন্য উপযোগী। ১০০% নিরাপদ ও ফ্রি।",
+                get_started: "এখনই শুরু করুন",
+                select_category: "আপনার সিভির ক্যাটাগরি বেছে নিন",
+                cat_bd: "বাংলাদেশ জব সিভি",
+                cat_bd_desc: "স্থানীয় কর্পোরেট, সরকারি ও এনজিও পজিশনের জন্য স্ট্যান্ডার্ড ফরম্যাট।",
+                cat_intl: "ইন্টারন্যাশনাল জব সিভি",
+                cat_intl_desc: "রিমোট ও গ্লোবাল কোম্পানির জন্য এটিএস-ফ্রেন্ডলি ক্লিন লেআউট।",
+                cat_student: "স্টুডেন্ট সিভি",
+                cat_student_desc: "একাডেমিক অর্জন, প্রজেক্ট এবং ইন্টার্নশিপ হাইলাইট করুন।",
+                cat_fresher: "ফ্রেশার সিভি",
+                cat_fresher_desc: "সাম্প্রতিক গ্র্যাজুয়েটদের ক্যারিয়ার শুরুর জন্য উপযুক্ত।",
+                cat_prof: "অভিজ্ঞ প্রফেশনাল",
+                cat_prof_desc: "দীর্ঘ কর্মজীবনের অর্জন এবং নেতৃত্ব গুণের ওপর ফোকাস করে।",
+                cat_malaysia: "মালয়েশিয়া বৈদেশিক কর্মী সিভি",
+                cat_malaysia_desc: "পাসপোর্ট তথ্য, দক্ষতা ও কাজের অভিজ্ঞতাসম্পন্ন বিশেষ ফরম্যাট।",
+                cat_europass: "ইউরোপাস-স্টাইল সিভি",
+                cat_europass_desc: "ইউরোপীয় প্রফেশনাল কনভেনশন লেআউট দ্বারা অনুপ্রাণিত।",
+                create_cv_btn: "সিভি তৈরি করুন",
+                back_home: "হোম",
+                save_draft: "ড্রাফট সেভ",
+                clear_form: "সব মুছুন",
+                sec_template: "টেমপ্লেট ও স্টাইলিং",
+                lbl_template: "টেমপ্লেট নির্বাচন",
+                lbl_accent: "অ্যাসেন্ট কালার",
+                lbl_photo_toggle: "ছবি দেখান",
+                sec_personal: "ব্যক্তিগত তথ্য",
+                lbl_fullname: "পূর্ণ নাম *",
+                lbl_photo: "প্রোফাইল ছবি",
+                lbl_father: "পিতার নাম",
+                lbl_mother: "মাতার নাম (ঐচ্ছিক)",
+                lbl_dob: "জন্ম তারিখ",
+                lbl_gender: "লিঙ্গ",
+                lbl_nationality: "জাতীয়তা",
+                lbl_religion: "ধর্ম (ঐচ্ছিক)",
+                lbl_marital: "বৈবাহিক অবস্থা",
+                lbl_mobile: "মোবাইল নম্বর *",
+                lbl_email: "ইমেইল ঠিকানা *",
+                lbl_nid: "এনআইডি নম্বর (ঐচ্ছিক)",
+                lbl_passport: "পাসপোর্ট নম্বর (ঐচ্ছিক)",
+                lbl_present_addr: "বর্তমান ঠিকানা",
+                lbl_perm_addr: "স্থায়ী ঠিকানা",
+                sec_objective: "ক্যারিয়ার উদ্দেশ্য ও সামারি",
+                lbl_objective: "ক্যারিয়ার উদ্দেশ্য",
+                lbl_desired_job: "কাঙ্ক্ষিত পজিশন",
+                lbl_industry: "পছন্দের ইন্ডাস্ট্রি",
+                sec_education: "শিক্ষাগত যোগ্যতা",
+                btn_add_edu: "শিক্ষা যোগ করুন",
+                sec_experience: "কাজের অভিজ্ঞতা",
+                btn_add_exp: "অভিজ্ঞতা যোগ করুন",
+                sec_skills: "দক্ষতা ও অন্যান্য তথ্য",
+                lbl_comp_skills: "কম্পিউটার দক্ষতা",
+                lbl_tech_skills: "টেকনিক্যাল দক্ষতা",
+                lbl_languages: "ভাষাগত দক্ষতা",
+                lbl_certifications: "প্রশিক্ষণ ও সার্টিফিকেট",
+                lbl_projects: "প্রজেক্টসমূহ",
+                lbl_references: "রেফারেন্স",
+                btn_download: "পিডিএফ ডাউনলোড",
+                btn_print: "প্রিন্ট সিভি"
+            }
+        };
+
+        let currentLang = 'en';
+        let profileImageData = '';
+        let educationList = [];
+        let experienceList = [];
+
+        // Navigation Controller
+        function switchView(viewName) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            if(viewName === 'home') {
+                document.getElementById('homeView').classList.add('active');
+            } else if(viewName === 'editor') {
+                document.getElementById('editorView').classList.add('active');
+                updatePreview();
+            }
+            window.scrollTo(0,0);
+        }
+
+        function selectCategory(category) {
+            switchView('editor');
+            showToast(`Selected category: ${category.toUpperCase()}`);
+        }
+
+        // Accordion Toggle
+        function toggleAccordion(header) {
+            const body = header.nextElementSibling;
+            body.style.display = body.style.display === 'none' ? 'flex' : 'flex'; // Simplified toggle logic
+        }
+
+        // Language Switcher
+        function changeLanguage(lang) {
+            currentLang = lang;
+            document.documentElement.setAttribute('data-lang', lang);
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if(i18n[lang][key]) {
+                    el.innerText = i18n[lang][key];
+                }
+            });
+            showToast(lang === 'bn' ? 'বাংলা ভাষা সক্রিয় করা হয়েছে' : 'Language switched to English');
+        }
+
+        // Dark Theme Toggle
+        function toggleTheme() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+        }
+
+        // Image Handler
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    profileImageData = e.target.result;
+                    updatePreview();
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Dynamic Education
+        function addEducationField(data = {}) {
+            const id = Date.now() + Math.random();
+            educationList.push({
+                id,
+                degree: data.degree || '',
+                institute: data.institute || '',
+                board: data.board || '',
+                passingYear: data.passingYear || '',
+                result: data.result || ''
+            });
+            renderEducationForm();
+            updatePreview();
+        }
+
+        function removeEducation(id) {
+            educationList = educationList.filter(item => item.id !== id);
+            renderEducationForm();
+            updatePreview();
+        }
+
+        function renderEducationForm() {
+            const container = document.getElementById('educationContainer');
+            container.innerHTML = '';
+            educationList.forEach((item, index) => {
+                container.innerHTML += `
+                    <div class="dynamic-item">
+                        <button class="remove-item-btn" onclick="removeEducation(${item.id})"><i class="fa-solid fa-trash"></i></button>
+                        <div class="form-group">
+                            <label>Degree / Examination</label>
+                            <input type="text" class="form-control" value="${item.degree}" oninput="updateEduField(${item.id}, 'degree', this.value)">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Institution Name</label>
+                                <input type="text" class="form-control" value="${item.institute}" oninput="updateEduField(${item.id}, 'institute', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>Board / University</label>
+                                <input type="text" class="form-control" value="${item.board}" oninput="updateEduField(${item.id}, 'board', this.value)">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Passing Year</label>
+                                <input type="text" class="form-control" value="${item.passingYear}" oninput="updateEduField(${item.id}, 'passingYear', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>Result / GPA</label>
+                                <input type="text" class="form-control" value="${item.result}" oninput="updateEduField(${item.id}, 'result', this.value)">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function updateEduField(id, field, value) {
+            const item = educationList.find(i => i.id === id);
+            if(item) {
+                item[field] = value;
+                updatePreview();
+            }
+        }
+
+        // Dynamic Experience
+        function addExperienceField(data = {}) {
+            const id = Date.now() + Math.random();
+            experienceList.push({
+                id,
+                company: data.company || '',
+                title: data.title || '',
+                startDate: data.startDate || '',
+                endDate: data.endDate || '',
+                responsibilities: data.responsibilities || ''
+            });
+            renderExperienceForm();
+            updatePreview();
+        }
+
+        function removeExperience(id) {
+            experienceList = experienceList.filter(item => item.id !== id);
+            renderExperienceForm();
+            updatePreview();
+        }
+
+        function renderExperienceForm() {
+            const container = document.getElementById('experienceContainer');
+            container.innerHTML = '';
+            experienceList.forEach((item) => {
+                container.innerHTML += `
+                    <div class="dynamic-item">
+                        <button class="remove-item-btn" onclick="removeExperience(${item.id})"><i class="fa-solid fa-trash"></i></button>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Company Name</label>
+                                <input type="text" class="form-control" value="${item.company}" oninput="updateExpField(${item.id}, 'company', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>Job Title</label>
+                                <input type="text" class="form-control" value="${item.title}" oninput="updateExpField(${item.id}, 'title', this.value)">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Start Date</label>
+                                <input type="text" class="form-control" placeholder="Jan 2023" value="${item.startDate}" oninput="updateExpField(${item.id}, 'startDate', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>End Date</label>
+                                <input type="text" class="form-control" placeholder="Present" value="${item.endDate}" oninput="updateExpField(${item.id}, 'endDate', this.value)">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Responsibilities</label>
+                            <textarea class="form-control" rows="2" oninput="updateExpField(${item.id}, 'responsibilities', this.value)">${item.responsibilities}</textarea>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function updateExpField(id, field, value) {
+            const item = experienceList.find(i => i.id === id);
+            if(item) {
+                item[field] = value;
+                updatePreview();
+            }
+        }
+
+        // Live Preview Real-time Updater
+        function updatePreview() {
+            // Template & Styling
+            const template = document.getElementById('templateSelect').value;
+            const accent = document.getElementById('accentColor').value;
+            const showPhoto = document.getElementById('showPhoto').value;
+
+            const previewContainer = document.getElementById('cv-preview');
+            previewContainer.className = `cv-preview-container ${template}`;
+            previewContainer.style.setProperty('--accent-color', accent);
+
+            // Personal Info
+            document.getElementById('prevName').innerText = document.getElementById('fullName').value || 'Your Name';
+            document.getElementById('prevDesiredJob').innerText = document.getElementById('desiredJob').value || 'Desired Position';
+            document.getElementById('prevMobile').innerText = document.getElementById('mobile').value || '+880 1700-000000';
+            document.getElementById('prevEmail').innerText = document.getElementById('email').value || 'email@example.com';
+            document.getElementById('prevAddress').innerText = document.getElementById('presentAddress').value || 'Address';
+
+            const photoEl = document.getElementById('prevPhoto');
+            if(showPhoto === 'yes' && profileImageData) {
+                photoEl.src = profileImageData;
+                photoEl.style.display = 'block';
+            } else {
+                photoEl.style.display = 'none';
+            }
+
+            document.getElementById('prevFather').innerText = document.getElementById('fathersName').value || '-';
+            document.getElementById('prevMother').innerText = document.getElementById('mothersName').value || '-';
+            document.getElementById('prevDob').innerText = document.getElementById('dob').value || '-';
+            document.getElementById('prevGender').innerText = document.getElementById('gender').value || '-';
+            document.getElementById('prevNationality').innerText = document.getElementById('nationality').value || 'Bangladeshi';
+            document.getElementById('prevMarital').innerText = document.getElementById('maritalStatus').value || 'Single';
+
+            // Objective
+            const objText = document.getElementById('objective').value;
+            document.getElementById('prevObjectiveText').innerText = objText;
+            document.getElementById('sectionObjective').style.display = objText ? 'block' : 'none';
+
+            // Education List Render
+            const eduListEl = document.getElementById('prevEducationList');
+            eduListEl.innerHTML = '';
+            educationList.forEach(edu => {
+                eduListEl.innerHTML += `
+                    <div class="cv-item">
+                        <div class="cv-item-title"><span>${edu.degree || 'Degree'}</span> <span class="cv-item-date">${edu.passingYear || ''}</span></div>
+                        <div class="cv-item-subtitle">${edu.institute || ''} ${edu.board ? '- ' + edu.board : ''}</div>
+                        <div>Result: ${edu.result || ''}</div>
+                    </div>
+                `;
+            });
+            document.getElementById('sectionEducation').style.display = educationList.length > 0 ? 'block' : 'none';
+
+            // Experience List Render
+            const expListEl = document.getElementById('prevExperienceList');
+            expListEl.innerHTML = '';
+            experienceList.forEach(exp => {
+                expListEl.innerHTML += `
+                    <div class="cv-item">
+                        <div class="cv-item-title"><span>${exp.title || 'Job Title'}</span> <span class="cv-item-date">${exp.startDate} - ${exp.endDate}</span></div>
+                        <div class="cv-item-subtitle">${exp.company || ''}</div>
+                        <div>${exp.responsibilities || ''}</div>
+                    </div>
+                `;
+            });
+            document.getElementById('sectionExperience').style.display = experienceList.length > 0 ? 'block' : 'none';
+
+            // Skills & Additional
+            document.getElementById('prevCompSkills').innerText = document.getElementById('computerSkills').value || '-';
+            document.getElementById('prevTechSkills').innerText = document.getElementById('techSkills').value || '-';
+            document.getElementById('prevLang').innerText = document.getElementById('languages').value || '-';
+            document.getElementById('prevCert').innerText = document.getElementById('certifications').value || '-';
+            document.getElementById('prevProj').innerText = document.getElementById('projects').value || '-';
+            document.getElementById('prevRef').innerText = document.getElementById('references').value || '-';
+        }
+
+        // PDF Download using html2pdf.js
+        function downloadPDF() {
+            const element = document.getElementById('cv-preview');
+            const opt = {
+                margin:       0,
+                filename:     (document.getElementById('fullName').value || 'Smart_CV') + '_Resume.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().from(element).set(opt).save();
+            showToast('PDF downloaded successfully!');
+        }
+
+        // LocalStorage Save & Reset Draft
+        function saveDraft() {
+            const formData = {
+                fullName: document.getElementById('fullName').value,
+                fathersName: document.getElementById('fathersName').value,
+                mothersName: document.getElementById('mothersName').value,
+                dob: document.getElementById('dob').value,
+                gender: document.getElementById('gender').value,
+                nationality: document.getElementById('nationality').value,
+                religion: document.getElementById('religion').value,
+                maritalStatus: document.getElementById('maritalStatus').value,
+                mobile: document.getElementById('mobile').value,
+                email: document.getElementById('email').value,
+                nid: document.getElementById('nid').value,
+                passport: document.getElementById('passport').value,
+                presentAddress: document.getElementById('presentAddress').value,
+                permAddress: document.getElementById('permAddress').value,
+                objective: document.getElementById('objective').value,
+                desiredJob: document.getElementById('desiredJob').value,
+                industry: document.getElementById('industry').value,
+                computerSkills: document.getElementById('computerSkills').value,
+                techSkills: document.getElementById('techSkills').value,
+                languages: document.getElementById('languages').value,
+                certifications: document.getElementById('certifications').value,
+                projects: document.getElementById('projects').value,
+                references: document.getElementById('references').value,
+                educationList,
+                experienceList,
+                profileImageData
+            };
+            localStorage.setItem('smart_cv_draft', JSON.stringify(formData));
+            showToast('Draft saved successfully to browser storage!');
+        }
+
+        function loadDraft() {
+            const saved = localStorage.getItem('smart_cv_draft');
+            if(saved) {
+                const data = JSON.parse(saved);
+                document.getElementById('fullName').value = data.fullName || '';
+                document.getElementById('fathersName').value = data.fathersName || '';
+                document.getElementById('mothersName').value = data.mothersName || '';
+                document.getElementById('dob').value = data.dob || '';
+                document.getElementById('gender').value = data.gender || 'Male';
+                document.getElementById('nationality').value = data.nationality || 'Bangladeshi';
+                document.getElementById('religion').value = data.religion || '';
+                document.getElementById('maritalStatus').value = data.maritalStatus || 'Single';
+                document.getElementById('mobile').value = data.mobile || '';
+                document.getElementById('email').value = data.email || '';
+                document.getElementById('nid').value = data.nid || '';
+                document.getElementById('passport').value = data.passport || '';
+                document.getElementById('presentAddress').value = data.presentAddress || '';
+                document.getElementById('permAddress').value = data.permAddress || '';
+                document.getElementById('objective').value = data.objective || '';
+                document.getElementById('desiredJob').value = data.desiredJob || '';
+                document.getElementById('industry').value = data.industry || '';
+                document.getElementById('computerSkills').value = data.computerSkills || '';
+                document.getElementById('techSkills').value = data.techSkills || '';
+                document.getElementById('languages').value = data.languages || '';
+                document.getElementById('certifications').value = data.certifications || '';
+                document.getElementById('projects').value = data.projects || '';
+                document.getElementById('references').value = data.references || '';
+                educationList = data.educationList || [];
+                experienceList = data.experienceList || [];
+                profileImageData = data.profileImageData || '';
+                renderEducationForm();
+                renderExperienceForm();
+                updatePreview();
+            }
+        }
+
+        function confirmReset() {
+            if(confirm('Are you sure you want to clear all form data?')) {
+                localStorage.removeItem('smart_cv_draft');
+                location.reload();
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            loadDraft();
+            if(educationList.length === 0) {
+                addEducationField({ degree: 'B.Sc in CSE', institute: 'University of Dhaka', passingYear: '2025', result: '3.80/4.00' });
+            }
+            if(experienceList.length === 0) {
+                addExperienceField({ company: 'Tech BD Ltd.', title: 'Junior Developer', startDate: 'Jan 2025', endDate: 'Present', responsibilities: 'Developed web applications using modern JavaScript.' });
+            }
+            updatePreview();
+        };
+    </script>
+</body>
+</html>
